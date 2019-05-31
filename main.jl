@@ -6,7 +6,7 @@ using JuMP, SDDP, Clp, Base.Test,JLD
                 #Si quiero quedar sobre el índice, a>1.
 S=5             #Horizonte de simulación (escenarios en años).
 N=4             #cantidad de activos
-cvar_tolerancia=0.5 #toleracia al riesgo
+cvar_tolerancia=0.7 #toleracia al riesgo
 cvar_confianza=0.1
 
 rf=1.034  #activo libre de riesgo
