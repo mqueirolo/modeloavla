@@ -6,7 +6,7 @@ using JuMP, SDDP, Clp, Base.Test,JLD
                 #Si quiero quedar sobre el índice, a>1.
 S=5             #Horizonte de simulación (escenarios en años).
 N=4             #cantidad de activos
-cvar_tolerancia=0.4 #toleracia al riesgo
+cvar_tolerancia=0.0 #toleracia al riesgo
 cvar_confianza=0.1
 
 rf=1.034  #activo libre de riesgo
@@ -327,4 +327,8 @@ SDDP.addplot!(plt, 1:caminos, 1:S+1,(i, t)->cash[i,t], title="caja", ylabel="")
 
 SDDP.show("simulacion.html", plt)
 
-writedlm("analisis_peso1.txt", hcat(peso1,peso2,peso3,peso_cash))
+writedlm("analisis_peso1.txt", hcat(peso1,peso2,peso3,peso4,peso_cash))
+writedlm("analisis_precios.txt", hcat(precio1,precio2,precio3,precio4))
+writedlm("analisis_riqueza.txt", riqueza)
+writedlm("analisis_caja.txt", hcat(cash,debt))
+writedlm("analisis_ratio.txt", ratioMAriqueza)
