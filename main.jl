@@ -239,7 +239,7 @@ for i=1:SIMN
                         ratioMAriqueza[i,t]=(MA_credito+MA_garantia)/riqueza[i,t]
                     end
                     if t==1
-                        riqueza[i,t]=riqueza[i,t]+sim[i][:CASHt][t]-sim[i][:DEUDAt][t]
+                        riqueza[i,t]=riqueza[i,t]+sim[i][:CASHt][t]+sim[i][:DEUDAt][t]
                         ratioMAriqueza[i,t]=(MA_credito+MA_garantia)/riqueza[i,t]
                         debt[i,t]=0.0
                         cash[i,t]=cash_init
