@@ -4,14 +4,14 @@ using JuMP, SDDP, Clp, Base.Test,JLD
 
                 #Costo de transacción.
                 #Si quiero quedar sobre el índice, a>1.
-S=5             #Horizonte de simulación (escenarios en años).
+S=10             #Horizonte de simulación (escenarios en años).
 N=4             #cantidad de activos
-cvar_tolerancia=0.0 #toleracia al riesgo
+cvar_tolerancia=0.4 #toleracia al riesgo
 cvar_confianza=0.1
 
-rf=1.034  #activo libre de riesgo
-cash_init=14400000000.0 # al principio solo se tiene cash_init de caja , nada en activos
-p_init=10000.0 # precio inicial de todos los activos (inventado)
+rf=1.029  #activo libre de riesgo
+cash_init=100.0 # al principio solo se tiene cash_init de caja , nada en activos
+p_init=100.0 # precio inicial de todos los activos (inventado)
 tasa_reaseguradora_credito=0.9
 tasa_reaseguradora_garantia=0.7
 MA_credito=0.5*min(cash_init,cash_init/((1-tasa_reaseguradora_credito)*S)) #condicion para que plata inicial pueda cubrir maximas perdidas todos los años sin pedir prestado
@@ -25,14 +25,14 @@ prima_reaseguradora_garantia=tasa_reaseguradora_garantia*prima_ingreso_garantia
 prob_siniestralidad_credito=[0.9792,0.00116,0.0185,0.00114]
 prob_siniestralidad_garantia=[0.99011,0,0.00968,0.00021]
 #prob_siniestralidad=[prob_siniestralidad_credito,prob_siniestralidad_garantia]
-grado_siniestralidad_credito=[0,0.5,0.75,1]*(1-tasa_reaseguradora_credito)*MA_credito
+grado_siniestralidad_credito=[0.0,0.5,0.75,1]*(1-tasa_reaseguradora_credito)*MA_credito
 # grado_siniestralidad_credito_aux=[0,0.5,0.75,1]*(1-tasa_reaseguradora_credito)
-grado_siniestralidad_garantia=[0,0.5,0.75,1]*(1-tasa_reaseguradora_garantia)*MA_garantia
+grado_siniestralidad_garantia=[0.0,0.5,0.75,1]*(1-tasa_reaseguradora_garantia)*MA_garantia
 # grado_siniestralidad_garantia_aux=[0,0.5,0.75,1]*(1-tasa_reaseguradora_garantia)
 prob_siniestralidad_1=prob_siniestralidad_credito
 prob_siniestralidad_2=prob_siniestralidad_garantia
-grado_siniestralidad_1=[0,0.5,0.75,1]
-grado_siniestralidad_2=[0,0.5,0.75,1]
+grado_siniestralidad_1=[0.0,0.5,0.75,1]
+grado_siniestralidad_2=[0.0,0.5,0.75,1]
 
 prob_siniestralidad=zeros(Float64, length(prob_siniestralidad_1)*length(prob_siniestralidad_2))
 grado_siniestralidad=zeros(Float64, length(prob_siniestralidad_1)*length(prob_siniestralidad_2))
@@ -70,13 +70,13 @@ dduu=transpose([-1, -1, 1, 1])
 ud=zeros(Float64, 2^N, N)
 ud=[uuuu;uduu;uudu;uuud;uddu;uudd;udud;duud;dddd;uddd;
 dudd;ddud;dddu;dudu;duuu;dduu]
-correl=[[1.00 0.992 0.938 0.714];
-[0.992 1.00 0.968 0.772];
-[0.938 0.968 1.00 0.900];
-[0.714 0.772 0.900 1.00]]
+correl=[[1.00 0.945 0.738 -0.068];
+[0.945 1.00 0.901 0.201];
+[0.738 0.901 1.00 0.537];
+[-0.068 0.201 0.537 1.00]]
 
-drift=[0.00623,0.00608,0.00621,0.00607]
-sigma=[0.09523,0.06968,0.04767,0.03064]
+drift=[0.0703,0.0684,0.0665,0.0661]
+sigma=[0.0963,0.0474,0.0300,0.0251]
 delta=drift-0.5*sigma.^2
 aux=repmat(delta',2^N,1)
 for i = 1:2^N
@@ -140,14 +140,14 @@ m = SDDPModel(
 
 
         @state(sp, Xt[j=1:N]>=0, X0==0.0)
-        @state(sp, CASHt>=0, CASH0==cash_init)
-        @state(sp, Deuda_pasadat>=0, Deuda_pasada0==0)
+        @state(sp, CASHt>=0.0, CASH0==cash_init)
+        @state(sp, Deuda_pasadat>=0.0, Deuda_pasada0==0.0)
 
         @variables(sp, begin
 
-                BUYt[j=1:N]>=0
-                SELLt[j=1:N]>=0
-                DEUDAt>=0
+                BUYt[j=1:N]>=0.0
+                SELLt[j=1:N]>=0.0
+                DEUDAt>=0.0
                 # Monto Asegurado incluirlo como variable de estado y realizar el ploteo para hacer seguimiento del ratio entre el monto asegurado y la riqueza en tiempo t
                 # @state(sp, MAt>=0, MA0==0)
         end)
@@ -157,15 +157,15 @@ m = SDDPModel(
                @constraint(sp,CASHt == CASH0+ DEUDAt -sum(BUYt[j] for j in 1:N) + sum(SELLt[j] for j in 1:N))
                @constraint(sp,balanceXt[j=1:N], Xt[j]== X0[j] + BUYt[j] - SELLt[j])
                @constraint(sp, Deuda_pasadat == DEUDAt)
-               @constraint(sp, CASHt+sum(Xt[j] for j in 1:N) -(1+tasa_deuda)*Deuda_pasada0 >= 0) #liquidez
+               @constraint(sp, CASHt+sum(Xt[j] for j in 1:N) -(1+tasa_deuda)*Deuda_pasada0 >= 0.0) #liquidez
 
 
         elseif t==S+1
 
                @constraint(sp,CASHt == CASH0*rf + DEUDAt-(1+tasa_deuda)*Deuda_pasada0)
                @constraint(sp,balanceXt[j=1:N], Xt[j]== X0[j]*R[i,j])
-               @constraint(sp, fijo_buy[j=1:N], BUYt[j]==0)
-               @constraint(sp, fijo_sell[j=1:N], SELLt[j]==0)
+               @constraint(sp, fijo_buy[j=1:N], BUYt[j]==0.0)
+               @constraint(sp, fijo_sell[j=1:N], SELLt[j]==0.0)
 
                #@constraint(sp, fijo_deuda, DEUDAt==0)
                #@constraint(sp,balance_equalt[j=1:N], Xt[j]== (1/N)*sum(X0[j]*R[i,j] for j in 1:N))
@@ -176,7 +176,7 @@ m = SDDPModel(
                 #setnoiseprobability!(sp, prob_siniestralidad_garantia)
                 @constraint(sp,balanceXt[j=1:N], Xt[j] == X0[j]*R[i,j] + BUYt[j] - SELLt[j])
                 @constraint(sp, Deuda_pasadat == DEUDAt)
-                @constraint(sp, CASHt+sum(Xt[j] for j in 1:N) -(1+tasa_deuda)*Deuda_pasada0 >= 0) #liquidez
+                @constraint(sp, CASHt+sum(Xt[j] for j in 1:N) -(1+tasa_deuda)*Deuda_pasada0 >= 0.0) #liquidez
 
                 #@constraint(sp,balance_equalt[j=1:N], Xt[j]== (1/N)*sum(X0[j]*R[i,j] for j in 1:N))
                 #@constraint(sp,balance_cash0, CASHt== 0.0)
@@ -244,7 +244,7 @@ for i=1:SIMN
                         debt[i,t]=0.0
                         cash[i,t]=cash_init
                     else
-                        riqueza[i,t]=riqueza[i,t]+sim[i][:CASHt][t]-sim[i][:DEUDAt][t]-(1+tasa_deuda)*sim[i][:DEUDAt][t-1]
+                        riqueza[i,t]=riqueza[i,t]+sim[i][:CASHt][t]+sim[i][:DEUDAt][t]-(1+tasa_deuda)*sim[i][:DEUDAt][t-1]
                         ratioMAriqueza[i,t]=(MA_credito+MA_garantia)/riqueza[i,t]
                         debt[i,t]=sim[i][:DEUDAt][t]
                         cash[i,t]=sim[i][:CASHt][t]
