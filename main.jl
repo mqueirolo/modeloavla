@@ -4,9 +4,9 @@ using JuMP, SDDP, Clp, Base.Test,JLD
 
                 #Costo de transacción.
                 #Si quiero quedar sobre el índice, a>1.
-S=10             #Horizonte de simulación (escenarios en años).
+S=20             #Horizonte de simulación (escenarios en años).
 N=4             #cantidad de activos
-cvar_tolerancia=0.4 #toleracia al riesgo
+cvar_tolerancia=0.87 #toleracia al riesgo
 cvar_confianza=0.1
 
 rf=1.029  #activo libre de riesgo
@@ -239,7 +239,7 @@ for i=1:SIMN
                         ratioMAriqueza[i,t]=(MA_credito+MA_garantia)/riqueza[i,t]
                     end
                     if t==1
-                        riqueza[i,t]=riqueza[i,t]+sim[i][:CASHt][t]+sim[i][:DEUDAt][t]
+                        riqueza[i,t]=riqueza[i,t]+sim[i][:CASHt][t]-sim[i][:DEUDAt][t]
                         ratioMAriqueza[i,t]=(MA_credito+MA_garantia)/riqueza[i,t]
                         debt[i,t]=0.0
                         cash[i,t]=cash_init
