@@ -4,7 +4,7 @@ using JuMP, SDDP, Clp, Base.Test,JLD
 
                 #Costo de transacción.
                 #Si quiero quedar sobre el índice, a>1.
-S=20             #Horizonte de simulación (escenarios en años).
+S=10             #Horizonte de simulación (escenarios en años).
 N=4             #cantidad de activos
 cvar_tolerancia=0.87 #toleracia al riesgo
 cvar_confianza=0.1
@@ -321,7 +321,7 @@ SDDP.addplot!(plt, 1:caminos, 1:S+1,(i, t)->ratioMAriqueza[i,t], title="ratio", 
 SDDP.addplot!(plt, 1:caminos, 1:S+1,(i, t)->precio1[i,t], title="price1", ylabel="")
 SDDP.addplot!(plt, 1:caminos, 1:S+1,(i, t)->precio2[i,t], title="price2", ylabel="")
 SDDP.addplot!(plt, 1:caminos, 1:S+1,(i, t)->precio3[i,t], title="price3", ylabel="")
-SDDP.addplot!(plt, 1:caminos, 1:S+1,(i, t)->precio4[i,t], title="pindice", ylabel="")
+SDDP.addplot!(plt, 1:caminos, 1:S+1,(i, t)->precio4[i,t], title="price4", ylabel="")
 SDDP.addplot!(plt, 1:caminos, 1:S+1,(i, t)->debt[i,t], title="deuda", ylabel="")
 SDDP.addplot!(plt, 1:caminos, 1:S+1,(i, t)->cash[i,t], title="caja", ylabel="")
 
@@ -332,3 +332,4 @@ writedlm("analisis_precios.txt", hcat(precio1,precio2,precio3,precio4))
 writedlm("analisis_riqueza.txt", riqueza)
 writedlm("analisis_caja.txt", hcat(cash,debt))
 writedlm("analisis_ratio.txt", ratioMAriqueza)
+writedlm("analisis_metricas.txt", metricas_riqueza)
